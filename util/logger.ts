@@ -1,5 +1,29 @@
 import { logType } from 'interfaces/types';
 
+const Logger = require("@ptkdev/logger");
+
+const options = {
+	language: "en",
+	colors: true,
+	debug: true,
+	info: true,
+	warning: true,
+	error: true,
+	sponsor: true,
+	write: true,
+	type: "log",
+	rotate: {
+		size: "10M",
+		encoding: "utf8",
+	},
+	path: {
+		// remember: add string *.log to .gitignore
+		debug_log: "./debug.log",
+		error_log: "./errors.log",
+	},
+};
+const loggest = new Logger(options);
+
 export function logger(logData: logType) {
 
 	const bgRed = "\x1b[41m"
@@ -28,26 +52,35 @@ export function logger(logData: logType) {
 	switch (logData.type) {
 		case "error":
 			console.group();
-			console.log(error, logData.desc);
-			console.log(errorMessage, logData.message);
+			loggest.error(logData.desc);
+			loggest.error(logData.message, "");
+			// console.log(errorMessage, logData.message);
 			console.groupEnd();
 			break;
 		case "success":
 			console.group();
-			console.log(success, logData.desc);
-			console.log(successMessage, logData.message);
+			loggest.info(logData.desc, "Success");
+			loggest.info(logData.message, "");
+			// console.log(successMessage, logData.message);
 			console.groupEnd();
 			break;
 		case "warning":
 			console.group();
-			console.log(warning, logData.desc);
-			console.log(warningMessage, logData.message);
+			loggest.warning(logData.desc);
+			loggest.warning(logData.message, "");
+			// console.log(warningMessage, logData.message);
 			console.groupEnd();
 			break;
 		case "neutral":
 			console.group();
-			console.log(neutral, logData.desc);
 			console.log(neutralMessage, logData.message);
+			console.groupEnd();
+			break;
+		case "debug":
+			console.group();
+			loggest.debug(logData.desc);
+			loggest.debug(logData.message, "");
+			// console.log(neutralMessage, logData.message);
 			console.groupEnd();
 			break;
 	}
