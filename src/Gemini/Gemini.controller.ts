@@ -11,23 +11,19 @@ export class GeminiController {
   async changeTextToCommand(@Body("text") text: string) {
     logger({ message: text, desc: "Trying to convert to command", type: "neutral" })
     const data = await this.ai.changeTextToCommand(text)
-    if (data.text)
-      logger({ message: JSON.stringify(data.text), desc: "Converted change text to command ", type: "success" })
-    else {
-      logger({ message: JSON.stringify(data), desc: "Converted change text to command ", type: "error" })
+    if (data.isErr()) {
+      return
     }
-    return data.text
+    return data.value.text
   }
 
   @Post("/matchContact")
   async matchContact(@Body() matchContactDto: MatchContactDTO) {
     logger({ message: JSON.stringify(matchContactDto), desc: "Trying to match", type: "neutral" })
     const data = await this.ai.matchContact(matchContactDto.name, matchContactDto.contacts)
-    if (data.text)
-      logger({ message: data.text, desc: "Got a match ", type: "success" })
-    else {
-      logger({ message: data.text, desc: "Can not find a match", type: "warning" })
+    if (data.isErr()) {
+      return
     }
-    return data.text
+    return data.value.text
   }
 }

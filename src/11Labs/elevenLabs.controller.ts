@@ -1,4 +1,4 @@
-import { Body, Controller, FileTypeValidator, MaxFileSizeValidator, ParseFilePipe, Post, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, MaxFileSizeValidator, ParseFilePipe, Post, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { ElevenLabsService } from "./elevenLabs.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Response } from 'express';
@@ -15,8 +15,7 @@ export class ElevenLabsController {
       new ParseFilePipe({
         fileIsRequired: true,
         validators: [
-          new MaxFileSizeValidator({ maxSize: 50000 }),
-          new FileTypeValidator({ fileType: 'audio/ogg' }),
+          new MaxFileSizeValidator({ maxSize: 500000 }),
         ]
 
       })
@@ -24,12 +23,16 @@ export class ElevenLabsController {
     audio: Express.Multer.File) {
     const blob = new Blob([audio.buffer], { type: audio.mimetype });
     const response = await this.elevenLabs.speech2text(blob)
+    if (response.isErr()) {
 
-    logger({ message: JSON.stringify(response.words), desc: "Audio successfully changed to text", type: "success" })
+      return
+    }
+
+    logger({ message: JSON.stringify(response.value.words), desc: "Audio successfully changed to text", type: "success" })
 
     return {
       "message": "sucessfully converted audio",
-      "data": response.text
+      "data": response.value.text
     }
   }
 
@@ -44,6 +47,9 @@ export class ElevenLabsController {
       type: "neutral"
     })
     const audioResponse = await this.elevenLabs.text2speech(text);
+    if (audioResponse.isErr()) {
+      return
+    }
     // Send the buffer as an audio/mpeg response
     res.set({
       'Content-Type': 'audio/mpeg',
@@ -54,6 +60,6 @@ export class ElevenLabsController {
       desc: "Text successfully changed to audio",
       type: "success"
     })
-    res.send(audioResponse)
+    res.send(audioResponse.value)
   }
 }
