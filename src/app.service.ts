@@ -37,9 +37,9 @@ export class AppService {
 
     logger({ message: JSON.stringify(data.value.text), desc: "Converted change text to command ", type: "success" })
     const actionObj = JSON.parse(data.value.text)
-    logger({ message: actionObj.action, desc: "checking the actionObj action", type: "debug" })
-    logger({ message: actionObj.object, desc: "checking the actionObj object", type: "debug" })
-    logger({ message: actionObj.other, desc: "checking the actionObj other", type: "debug" })
+    logger({ message: actionObj.action, desc: "checking the action", type: "debug" })
+    logger({ message: actionObj.object, desc: "checking the object", type: "debug" })
+    logger({ message: actionObj.other, desc: "checking the other", type: "debug" })
     if (actionObj.action == "call") {
       this.call()
     }
