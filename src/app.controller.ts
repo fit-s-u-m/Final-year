@@ -1,18 +1,27 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, MaxFileSizeValidator, ParseFilePipe, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { AppService } from './app.service';
-import { logger } from 'util/logger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { AudioService } from './11Labs/audio.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) { }
+  constructor(private readonly appService: AppService, private readonly audioService: AudioService) { }
 
-  @Get()
-  getHello(): string {
-    logger({
-      message: "nice thing",
-      desc: "Text successfully changed to audio",
-      type: "success"
-    })
-    return this.appService.getHello();
+  @UseInterceptors(FileInterceptor("audio"))
+  @Post()
+  public async analizeAudio(
+    @UploadedFile(
+      new ParseFilePipe({
+        fileIsRequired: true,
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 500000 }),
+        ]
+      })
+    )
+    audio: Express.Multer.File) {
+
+    const processedAudio = await this.audioService.processAudio(audio);
+    const blob = new Blob([processedAudio], { type: audio.mimetype });
+    return this.appService.analizeAudioBlob(blob)
   }
 }
