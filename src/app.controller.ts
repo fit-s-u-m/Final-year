@@ -6,6 +6,10 @@ import { AudioService } from './11Labs/audio.service';
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService, private readonly audioService: AudioService) { }
+  @Get()
+  public hello() {
+    return "Hello from abe"
+  }
 
   @UseInterceptors(FileInterceptor("audio"))
   @Post()
