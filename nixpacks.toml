@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["ffmpeg"]
+
+[phases.install]
+cmds = ["corepack enable", "corepack prepare pnpm@latest --activate", "pnpm install"]
+
+[phases.build]
+cmds = ["pnpm build"]
+
+[start]
+cmd = "pnpm start:prod"
