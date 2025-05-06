@@ -2,13 +2,18 @@ import { Body, Controller, Post } from "@nestjs/common";
 import { GeminiService } from "./Gemini.service";
 import { logger } from "util/logger";
 import { MatchContactDTO } from "interfaces/contacts";
+import { TextCommandDto } from "interfaces/dto";
+import { ApiBody } from "@nestjs/swagger";
 
 @Controller()
 export class GeminiController {
   constructor(private ai: GeminiService) { }
 
   @Post("/changeText2Command")
-  async changeTextToCommand(@Body("text") text: string) {
+  @ApiBody({ type: TextCommandDto })
+  async changeTextToCommand(
+    @Body("text") body: TextCommandDto) {
+    const { text } = body;
     logger({ message: text, desc: "Trying to convert to command", type: "neutral" })
     const data = await this.ai.changeTextToCommand(text)
     if (data.isErr()) {

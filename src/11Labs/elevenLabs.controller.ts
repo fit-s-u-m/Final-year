@@ -3,12 +3,27 @@ import { ElevenLabsService } from "./elevenLabs.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Response } from 'express';
 import { logger } from "util/logger";
+import { ApiBody, ApiConsumes } from "@nestjs/swagger";
+import { TextToSpeechDto } from "interfaces/dto";
 
 @Controller()
 export class ElevenLabsController {
   constructor(private elevenLabs: ElevenLabsService) { }
 
   @UseInterceptors(FileInterceptor("audio"))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        audio: {
+          type: 'string',
+          format: 'binary',
+          description: 'Audio file (max 500KB)',
+        },
+      },
+    },
+  })
   @Post("/speech2text")
   public async listenAudio(
     @UploadedFile(
@@ -37,10 +52,12 @@ export class ElevenLabsController {
   }
 
   @Post('/text2speech')
+  @ApiBody({ type: TextToSpeechDto })
   async convertTextToSpeech(
-    @Body('text') text: string,
+    @Body('text') body: TextToSpeechDto,
     @Res() res: Response
   ) {
+    const { text } = body
     logger({
       message: text,
       desc: "Going to change to audio",

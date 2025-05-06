@@ -1,7 +1,8 @@
-import { Controller, Get, MaxFileSizeValidator, ParseFilePipe, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, MaxFileSizeValidator, ParseFilePipe, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { AppService } from './app.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AudioService } from './11Labs/audio.service';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 
 @Controller()
 export class AppController {
@@ -12,6 +13,19 @@ export class AppController {
   }
 
   @UseInterceptors(FileInterceptor("audio"))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        audio: {
+          type: 'string',
+          format: 'binary',
+          description: 'Audio file (max 500KB)',
+        },
+      },
+    },
+  })
   @Post()
   public async analizeAudio(
     @UploadedFile(
