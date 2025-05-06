@@ -136,7 +136,6 @@ export class GeminiService {
             6. Return the best matching contact name as it appears in the list.
             7. If no good match is found, return an empty string.
             8. Output only the matched contact name.
-            9. Only apply fuzzy matching when the names are not actual distinct personal names.
 
             ### Example:
             Input Name: "አበበ"
