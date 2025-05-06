@@ -56,3 +56,16 @@
         ```
     - output is name from the contacts `string`
 
+
+ ## Web sockets
+
+   - Connect to ->  ws://localhost:8080/ws or in production -> wss://final-year-production.up.railway.app/ws
+   - OnMessage is the (command)
+     - ```json
+        {
+            action:string,
+            object:string,
+            others:anything
+        }
+        ```
+

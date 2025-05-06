@@ -26,6 +26,7 @@ export class AppController {
 
     const processedAudio = await this.audioService.processAudio(audio);
     const blob = new Blob([processedAudio], { type: audio.mimetype });
-    return this.appService.analizeAudioBlob(blob)
+    const result = await this.appService.analizeAudioBlob(blob)
+    return result
   }
 }
