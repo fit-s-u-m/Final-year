@@ -22,12 +22,6 @@ export class BroadcastGateway implements OnGatewayInit, OnGatewayConnection, OnG
   handleConnection(client: WebSocket) {
     this.logger.log("New client connected");
     this.clients.push(client);
-
-    // Send JSON welcome message
-    this.sendJson(client, {
-      type: 'greeting',
-      data: { message: 'Connected successfully', timestamp: Date.now() }
-    });
   }
 
   handleDisconnect(client: WebSocket) {
