@@ -134,8 +134,6 @@ export class GeminiService {
             5. **However, if the input name and the contact name are both actual personal names (e.g., recognized Ethiopian or international names) and they are different names, do NOT match them — even if they differ by only one letter.**
                 - Example: "Abebe" and "Abeba" are different Ethiopian names. Do NOT match them.
             6. Return the best matching contact name as it appears in the list.
-            7. If no good match is found, return an empty string.
-            8. Output only the matched contact name.
 
             ### Example:
             Input Name: "አበበ"
