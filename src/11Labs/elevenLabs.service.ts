@@ -1,6 +1,6 @@
 import { ElevenLabsClient } from "elevenlabs";
 import "dotenv/config";
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { SpeechToTextChunkResponseModel } from "elevenlabs/api/types";
 import { ok, err, ResultAsync, fromPromise } from 'neverthrow';
 import { logger } from "util/logger";
@@ -11,6 +11,7 @@ const client = new ElevenLabsClient();
 
 @Injectable()
 export class ElevenLabsService {
+  private readonly logger = new Logger(ElevenLabsService.name);
 
   async speech2text(audioBlob: Blob): Promise<ResultAsync<SpeechToTextChunkResponseModel, s2tErrType>> {
     const response = await fromPromise(client.speechToText.convert({
@@ -30,6 +31,7 @@ export class ElevenLabsService {
   }
 
   async text2speech(text: string): Promise<ResultAsync<ArrayBuffer, t2sErrType>> {
+    this.logger.log(`Trying to convert ${text}`)
     const response = await fromPromise(client.textToSpeech.convert("JBFqnCBsd6RMkjVDRZzb", {
       output_format: "mp3_44100_128",
       text,

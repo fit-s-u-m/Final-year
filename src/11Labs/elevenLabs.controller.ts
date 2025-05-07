@@ -1,4 +1,4 @@
-import { Body, Controller, MaxFileSizeValidator, ParseFilePipe, Post, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Logger, MaxFileSizeValidator, ParseFilePipe, Post, Res, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { ElevenLabsService } from "./elevenLabs.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Response } from 'express';
@@ -9,6 +9,7 @@ import { TextToSpeechDto } from "interfaces/dto";
 @Controller()
 export class ElevenLabsController {
   constructor(private elevenLabs: ElevenLabsService) { }
+  private readonly logger = new Logger(ElevenLabsController.name);
 
   @UseInterceptors(FileInterceptor("audio"))
   @ApiConsumes('multipart/form-data')
@@ -54,10 +55,11 @@ export class ElevenLabsController {
   @Post('/text2speech')
   @ApiBody({ type: TextToSpeechDto })
   async convertTextToSpeech(
-    @Body('text') body: TextToSpeechDto,
+    @Body() body: TextToSpeechDto,
     @Res() res: Response
   ) {
     const { text } = body
+    this.logger.log(`text 2 speech -> ${text}`)
     logger({
       message: text,
       desc: "Going to change to audio",
