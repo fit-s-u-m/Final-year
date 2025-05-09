@@ -50,6 +50,29 @@ export class GeminiService {
         If the number starts with "9" or is missing "09", automatically prepend "0" to make it "09xxxxxxx".
         make this in  the object key
 
+        Time Normalization:
+        If the object is a time expression (e.g., setting an set appointment or set alarm), convert it into this normalized format:
+        HH:MM:DD:MM:YYYY
+        (Use 24-hour format with leading zeroes for hour, minute, day, and month.)
+
+        Room Location Normalization:
+        When the input involves a light-related command, extract the room location from the voice and normalize it to one of the following values:
+
+        "bedroom"
+        "living room" (normalize inputs like "salon" or "ሳሎን" to this)
+
+        "outside"
+        Include the room as a separate field called "location" in camelCase.
+
+        Examples:
+
+        "ለእሁድ 3 ሰዓት 30 ደቂቃ ያስታውስ" →
+        { "object": "15:30:07:04:2025", "action": "remind" }
+
+        "set alarm for 8:00 AM tomorrow" →
+        { "object": "08:00:08:05:2025", "action": "alarm" }
+
+
         If the input text is exactly or contains "abe" or "selam abe" (in English or Amharic like "አቤ" or "ሰላም አቤ"):
         Set "action" to "wakeword" and "object" to an empty string.
         Ignore any other parts of the text.
@@ -80,7 +103,23 @@ export class GeminiService {
         JSON Output: { "object": "", "action": "wakeword" }
 
         Amharic Input: ሰላም አቤ
-        JSON Output: { "object": "", "action": "wakeword" }`,
+        JSON Output: { "object": "", "action": "wakeword" },
+
+        Amharic Input: መብራቱን ሳሎን አብራ
+        JSON Output: { "object": "light", "action": "turn on", "location": "living room" }
+        Amharic Input: መኝታ መብራትን አጥፋ
+        JSON Output: { "object": "light", "action": "turn off", "location": "bedroom" }
+
+        if you find this action try to match it exactly
+        call
+        turn on
+        turn off
+        wakework
+        set alarm
+        set appointement
+        remind
+        `,
+
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -88,6 +127,10 @@ export class GeminiService {
             'object': {
               type: Type.STRING,
               description: 'Object of the command that can be passed to the action function',
+            },
+            'location': {
+              type: Type.STRING,
+              description: 'Location of the action taken place',
             },
             'action': {
               type: Type.STRING,
