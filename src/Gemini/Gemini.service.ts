@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { GenerateContentResponse, GoogleGenAI, Type } from "@google/genai";
 import { ok, err, ResultAsync, fromPromise } from 'neverthrow';
-// import { logger } from "util/logger";
 import { matchContactsErrType, text2CommandErrType } from "interfaces/types";
+import { getDate, getHours, getMinutes, getMonth, getYear } from "date-fns";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -11,24 +11,29 @@ export class GeminiService {
   private readonly logger = new Logger(GeminiService.name);
 
   async changeTextToCommand(text: string): Promise<ResultAsync<GenerateContentResponse, text2CommandErrType>> {
+    const now = Date.now()
+    const date = `${getDate(now)}:${getMonth(now)}:${getYear(now)}`
+    const time = `${getHours(now)}:${getMinutes(now)}`
     const response = await fromPromise(ai.models.generateContent({
       model: 'gemini-2.0-flash',
       contents: `
           Amharic Input: "${text}"
+          Current Date: "${date}"
+          Time(EAT):"${time}"
           JSON Output:
-       `,
+      `,
       config: {
         systemInstruction: `
-        You are an Amharic to English command converter. Your task is to convert Amharic text into a structured English command in JSON format.
+        You are an Amharic to English command converter.Your task is to convert Amharic text into a structured English command in JSON format.
 
         Key Definitions:
-        object: The target of the action. This can be a person, place, or thing.
+object: The target of the action.This can be a person, place, or thing.
 
-        action: The verb or command being performed on the object.
+  action: The verb or command being performed on the object.
 
         Formatting Rules:
         JSON Output Only:
-        You MUST respond with valid JSON. Do not include any other text or explanations.
+        You MUST respond with valid JSON.Do not include any other text or explanations.
 
         Predefined Keys:
         Use the predefined keys: "object" and "action".
@@ -36,53 +41,45 @@ export class GeminiService {
         Free Format Keys:
         Any additional information found in the text that does not match a predefined key should be included as a separate key using camelCase formatting.
 
-        Amharic Language Handling:
-        If any names (person names, places) appear in Amharic, retain them in Amharic within the JSON and do not translate them into English.
+  Amharic Language Handling:
+    If any names (person names, places) appear in Amharic, retain them in Amharic within the JSON and do not translate them into English.
 
         Error Handling:
-        If the input text is ambiguous or does not contain a clear command, return an empty JSON object {}.
+        If the input text is ambiguous or does not contain a clear command, return an empty JSON object { }.
         If a property value is null or doesn't exist, return empty string.
 
         English Output:
-        The action and any free format keys must be in English. The object value can be in Amharic.
+        The action and any free format keys must be in English.The object value can be in Amharic.
 
         Special Handling:
         If the input includes "call" followed by a set of numbers:
         Format the number to match 0912345678 format.
         If the number starts with "9" or is missing "09", automatically prepend "0" to make it "09xxxxxxx".
-        make this in  the object key
+        make this in the object key
 
         Time Normalization:
-        If the object is a time expression (e.g., setting an set appointment or set alarm), convert it into this normalized format:
-        HH:MM:DD:MM:YYYY
-        (Use 24-hour format with leading zeroes for hour, minute, day, and month.)
+        If the object is a time expression(e.g., setting an set appointment or set alarm), convert it into this normalized format:
+HH: MM: DD: MM: YYYY
+ (Use 24-hour format with leading zeroes for hour, minute, day, and month.)
+          Things to consider while time normalization
+            - Default date: If no date (year, month, day) is provided in the Amharic input, use the day, month, and year derived from the "Current Date" provided in the input (which is in the format DD:MM:YYYY).
+            - Current time context: The current time in Ethiopian time (EAT) is provided as time in the input. Use this as a reference for interpreting relative time expressions like "አሁን" (now), "በቅርቡ" (soon), or when the Amharic input only provides a time of day (e.g., "ጠዋት").
+            - use ethiopian time zone
 
         Room Location Normalization:
-        When the input involves a light-related command, extract the room location from the voice and normalize it to one of the following values:
+        When the input involves a light - related command, extract the room location from the voice and normalize it to one of the following values:
 
         "bedroom"
-        "living room" (normalize inputs like "salon" or "ሳሎን" to this)
+        "living room"(normalize inputs like "salon" or "ሳሎን" to this)
 
         "outside"
         Include the room as a separate field called "location" in camelCase.
 
-        Examples:
-
-        "ለእሁድ 3 ሰዓት 30 ደቂቃ ያስታውስ" →
-        { "object": "15:30:07:04:2025", "action": "remind" }
-
-        "set alarm for 8:00 AM tomorrow" →
-        { "object": "08:00:08:05:2025", "action": "alarm" }
-
-
-        If the input text is exactly or contains "abe" or "selam abe" (in English or Amharic like "አቤ" or "ሰላም አቤ"):
+        If the input text is exactly or contains "abe" or "selam abe"(in English or Amharic like "አቤ" or "ሰላም አቤ"):
         Set "action" to "wakeword" and "object" to an empty string.
         Ignore any other parts of the text.
 
-        JSON Output Structure:
-        { "object": string, "action": string, "other": string }
-
-        Examples:
+Examples:
         Amharic Input: ለአበበ ደውል
         JSON Output: { "object": "አበበ", "action": "call" }
 
@@ -93,10 +90,10 @@ export class GeminiService {
         JSON Output: { "object": "ገበያ", "action": "go to" }
 
         Amharic Input: call 12345678
-        JSON Output: { "object": "0912345678", "action": "call"}
+        JSON Output: { "object": "0912345678", "action": "call" }
 
         Amharic Input: ለ912345678 ደውል
-        JSON Output: { "object": "0912345678" , "action": "call"}
+        JSON Output: { "object": "0912345678", "action": "call" }
 
         Amharic Input: አቤ
         JSON Output: { "object": "", "action": "wakeword" }
@@ -113,13 +110,25 @@ export class GeminiService {
         JSON Output: { "object": "light", "action": "turn off", "location": "bedroom" }
 
         if you find this action try to match it exactly
-        call
-        turn on
-        turn off
-        wakework
-        set alarm
-        set appointement
-        remind
+                call
+                turn on
+                turn off
+                wakework
+                set alarm
+                set appointement
+                remind
+
+        Amharic Input: ለእሁድ ማታ 3 ሰዓት 30 ደቂቃ ያስታውስ
+        JSON Output: { "object": "21:30:18:05:2025", "action": "remind" }
+
+        Amharic Input: set alarm for 12 in the morning, Ethiopian time, tomorrow
+        JSON Output: { "object": "06:00:19:05:2025", "action": "set alarm" }
+
+        Amharic Input: set appointment for 10am today
+        JSON Output: { "object": "16:00:18:05:2025", "action": "set appointment" }
+
+        Amharic Input: set reminder for 5pm 12 / 12
+        JSON Output: { "object": "23:00:12:12:2025", "action": "remind" }
         `,
 
         responseMimeType: 'application/json',
@@ -162,32 +171,32 @@ export class GeminiService {
       contents: `
           ### Input:
           Input Name: "${name}"
-          Contacts: ${JSON.stringify(contacts)}
+Contacts: ${JSON.stringify(contacts)}
 
-          Output:
-       `,
+Output:
+`,
       config: {
         responseMimeType: 'text/plain',
         systemInstruction: `
             You are a multilingual contact matcher and translator.
 
             ### Instructions:
-            1. Detect if the input name is in Amharic or English.
-            2. Translate it to the opposite language (Amharic ↔ English).
+1. Detect if the input name is in Amharic or English.
+            2. Translate it to the opposite language(Amharic ↔ English).
             3. Perform fuzzy matching between both the original and translated name against the contact list.
-            4. Match even if the names have minor spelling errors or variations but if the searched name makes a name and trying to sear .
-            5. **However, if the input name and the contact name are both actual personal names (e.g., recognized Ethiopian or international names) and they are different names, do NOT match them — even if they differ by only one letter.**
-                - Example: "Abebe" and "Abeba" are different Ethiopian names. Do NOT match them.
+            4. Match even if the names have minor spelling errors or variations but if the searched name makes a name and trying to sear.
+            5. ** However, if the input name and the contact name are both actual personal names(e.g., recognized Ethiopian or international names) and they are different names, do NOT match them — even if they differ by only one letter.**
+  - Example: "Abebe" and "Abeba" are different Ethiopian names.Do NOT match them.
             6. Return the best matching contact name as it appears in the list.
 
             ### Example:
             Input Name: "አበበ"
-            Contacts: ["Abe Tesfaye", "Abebe", "ተስፋዬ"]
-            Output: "Abebe"
+Contacts: ["Abe Tesfaye", "Abebe", "ተስፋዬ"]
+Output: "Abebe"
 
             Input Name: "Abebe"
-            Contacts: ["Abeba", "ተስፋዬ", "አበበ", "Tesfaye"]
-            Output: "አበበ"  (Do NOT match "Abeba" even though it's close.)
+Contacts: ["Abeba", "ተስፋዬ", "አበበ", "Tesfaye"]
+Output: "አበበ"(Do NOT match "Abeba" even though it's close.)
 
             Input Name: "mom"
             Contacts: ["mamy", "ተስፋዬ", "አበበ", "dad"]
@@ -196,8 +205,8 @@ export class GeminiService {
             Input Name: "እናቱ"
             Contacts: ["mamy", "ተስፋዬ", "አበበ", "dad"]
             Output: "mamy"
-        
-        `
+
+  `
       },
     }), e => e);
     if (response.isErr()) {

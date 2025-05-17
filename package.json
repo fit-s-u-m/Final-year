@@ -32,6 +32,7 @@
     "@ptkdev/logger": "^1.8.0",
     "@types/multer": "^1.4.12",
     "chalk": "^5.4.1",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
     "elevenlabs": "^1.57.0",
     "fluent-ffmpeg": "^2.1.3",
