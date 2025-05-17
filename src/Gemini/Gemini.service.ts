@@ -1,13 +1,15 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { GenerateContentResponse, GoogleGenAI, Type } from "@google/genai";
 import { ok, err, ResultAsync, fromPromise } from 'neverthrow';
-import { logger } from "util/logger";
+// import { logger } from "util/logger";
 import { matchContactsErrType, text2CommandErrType } from "interfaces/types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 @Injectable()
 export class GeminiService {
+  private readonly logger = new Logger(GeminiService.name);
+
   async changeTextToCommand(text: string): Promise<ResultAsync<GenerateContentResponse, text2CommandErrType>> {
     const response = await fromPromise(ai.models.generateContent({
       model: 'gemini-2.0-flash',
@@ -148,7 +150,7 @@ export class GeminiService {
       },
     }), e => e);
     if (response.isErr()) {
-      logger({ message: response.error, desc: "Error in gemini trying to change text to command", type: "error" })
+      this.logger.error(response.error)
       const error: text2CommandErrType = "Text2CommandGeminiError"
       return err(error)
     }
@@ -199,7 +201,8 @@ export class GeminiService {
       },
     }), e => e);
     if (response.isErr()) {
-      logger({ message: response.error, desc: "Error at Matching name to a list of contact", type: "error" })
+      // logger({ message: response.error, desc: "Error at Matching name to a list of contact", type: "error" })
+      this.logger.error(response.error)
       const error: matchContactsErrType = "matchName2ContactsGeminiError"
       return err(error)
     }

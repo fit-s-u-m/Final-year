@@ -3,7 +3,7 @@ import "dotenv/config";
 import { Injectable, Logger } from "@nestjs/common";
 import { SpeechToTextChunkResponseModel } from "elevenlabs/api/types";
 import { ok, err, ResultAsync, fromPromise } from 'neverthrow';
-import { logger } from "util/logger";
+// import { logger } from "util/logger";
 import { s2tErrType, t2sErrType } from "interfaces/types";
 
 const client = new ElevenLabsClient();
@@ -23,7 +23,7 @@ export class ElevenLabsService {
     }), e => e);
 
     if (response.isErr()) {
-      logger({ message: response.error, desc: "Error in Speech to text", type: "error" })
+      this.logger.error(response.error)
       const error: s2tErrType = "Speech2TextError"
       return err(error)
     }
@@ -39,7 +39,8 @@ export class ElevenLabsService {
     }), e => e);
 
     if (response.isErr()) {
-      logger({ message: response.error, desc: "Error in text to speech", type: "error" })
+      this.logger.error(response.error)
+      // logger({ message: response.error, desc: "Error in text to speech", type: "error" })
       const error: t2sErrType = "Text2SpeechError"
       return err(error)
     }
