@@ -2,7 +2,6 @@ import { Body, Controller, Logger, MaxFileSizeValidator, ParseFilePipe, Post, Re
 import { ElevenLabsService } from "./elevenLabs.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Response } from 'express';
-import { logger } from "util/logger";
 import { ApiBody, ApiConsumes } from "@nestjs/swagger";
 import { TextToSpeechDto } from "interfaces/dto";
 
@@ -43,8 +42,7 @@ export class ElevenLabsController {
 
       return
     }
-
-    logger({ message: JSON.stringify(response.value.words), desc: "Audio successfully changed to text", type: "success" })
+    this.logger.log(`Audio successfully changed to text-> ${response.value.words}`)
 
     return {
       "message": "sucessfully converted audio",
@@ -60,11 +58,6 @@ export class ElevenLabsController {
   ) {
     const { text } = body
     this.logger.log(`text 2 speech -> ${text}`)
-    logger({
-      message: text,
-      desc: "Going to change to audio",
-      type: "neutral"
-    })
     const audioResponse = await this.elevenLabs.text2speech(text);
     if (audioResponse.isErr()) {
       return
@@ -74,11 +67,7 @@ export class ElevenLabsController {
       'Content-Type': 'audio/mpeg',
       'Content-Disposition': 'inline; filename="speech.mp3"',
     });
-    logger({
-      message: text,
-      desc: "Text successfully changed to audio",
-      type: "success"
-    })
+    this.logger.log(`${text} successfully changed to audio`)
     res.send(audioResponse.value)
   }
 }

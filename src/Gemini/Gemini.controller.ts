@@ -1,8 +1,7 @@
 import { Body, Controller, Logger, Post } from "@nestjs/common";
 import { GeminiService } from "./Gemini.service";
-import { logger } from "util/logger";
-import { MatchContactDTO } from "interfaces/contacts";
-import { TextCommandDto } from "interfaces/dto";
+import { MatchContactDTO } from "../../interfaces/contacts";
+import { TextCommandDto } from "../../interfaces/dto";
 import { ApiBody } from "@nestjs/swagger";
 
 @Controller()
@@ -15,7 +14,7 @@ export class GeminiController {
   async changeTextToCommand(@Body() body: TextCommandDto) {
     this.logger.log(body)
     const { text } = body;
-    logger({ message: text, desc: "Trying to convert to command", type: "neutral" })
+    this.logger.log(text)
     if (text) {
       const data = await this.ai.changeTextToCommand(text)
       if (data.isErr()) {
@@ -27,7 +26,7 @@ export class GeminiController {
 
   @Post("/matchContact")
   async matchContact(@Body() matchContactDto: MatchContactDTO) {
-    logger({ message: JSON.stringify(matchContactDto), desc: "Trying to match", type: "neutral" })
+    this.logger.log(matchContactDto)
     const data = await this.ai.matchContact(matchContactDto.name, matchContactDto.contacts)
     if (data.isErr()) {
       return

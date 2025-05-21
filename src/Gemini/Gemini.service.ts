@@ -12,8 +12,9 @@ export class GeminiService {
 
   async changeTextToCommand(text: string): Promise<ResultAsync<GenerateContentResponse, text2CommandErrType>> {
     const now = Date.now()
-    const date = `${getDate(now)}:${getMonth(now)}:${getYear(now)}`
+    const date = `${getDate(now)}:${getMonth(now) + 1}:${getYear(now)}`
     const time = `${getHours(now)}:${getMinutes(now)}`
+    console.log("Date:", date)
     const response = await fromPromise(ai.models.generateContent({
       model: 'gemini-2.0-flash',
       contents: `
@@ -61,18 +62,24 @@ object: The target of the action.This can be a person, place, or thing.
         If the object is a time expression(e.g., setting an set appointment or set alarm), convert it into this normalized format:
 HH: MM: DD: MM: YYYY
  (Use 24-hour format with leading zeroes for hour, minute, day, and month.)
+
           Things to consider while time normalization
             - Default date: If no date (year, month, day) is provided in the Amharic input, use the day, month, and year derived from the "Current Date" provided in the input (which is in the format DD:MM:YYYY).
             - Current time context: The current time in Ethiopian time (EAT) is provided as time in the input. Use this as a reference for interpreting relative time expressions like "አሁን" (now), "በቅርቡ" (soon), or when the Amharic input only provides a time of day (e.g., "ጠዋት").
             - use ethiopian time zone
+          - **Ethiopian Time Interpretation:**
+            - 1:30 in Ethiopian time is interpreted as 19:00 in 24-hour clock.
+            - 6:00 in the midnight means 00:00.
+            - 7:00 in the afternoon is 13:00.
+            - 2:00 in the morning means 08:00.
 
         Room Location Normalization:
         When the input involves a light - related command, extract the room location from the voice and normalize it to one of the following values:
 
-        "bedroom"
+        "bed room"
         "living room"(normalize inputs like "salon" or "ሳሎን" to this)
+        "bath room"(normalize inputs like "toilet" to this)
 
-        "outside"
         Include the room as a separate field called "location" in camelCase.
 
         If the input text is exactly or contains "abe" or "selam abe"(in English or Amharic like "አቤ" or "ሰላም አቤ"):
@@ -85,9 +92,6 @@ Examples:
 
         Amharic Input: መብራቱን አጥፋ
         JSON Output: { "object": "መብራት", "action": "turn off" }
-
-        Amharic Input: ወደ ገበያ እንሂድ
-        JSON Output: { "object": "ገበያ", "action": "go to" }
 
         Amharic Input: call 12345678
         JSON Output: { "object": "0912345678", "action": "call" }
@@ -107,15 +111,24 @@ Examples:
         Amharic Input: መብራቱን ሳሎን አብራ
         JSON Output: { "object": "light", "action": "turn on", "location": "living room" }
         Amharic Input: መኝታ መብራትን አጥፋ
-        JSON Output: { "object": "light", "action": "turn off", "location": "bedroom" }
+        JSON Output: { "object": "light", "action": "turn off", "location": "bed room" }
+
+        Amharic Input: መታጠቢያ ቤት መብራትን አጥፋ
+        JSON Output: { "object": "light", "action": "turn off", "location": "bath room" }
+
+        Amharic Input:  ሸንት ቤት መብራትን አጥፋ
+        JSON Output: { "object": "light", "action": "turn off", "location": "bath room" }
+
 
         if you find this action try to match it exactly
                 call
                 turn on
                 turn off
+                open
+                close
                 wakework
                 set alarm
-                set appointement
+                set appointment 
                 remind
 
         Amharic Input: ለእሁድ ማታ 3 ሰዓት 30 ደቂቃ ያስታውስ
