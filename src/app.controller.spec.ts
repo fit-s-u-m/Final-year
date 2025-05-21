@@ -9,6 +9,7 @@ import { BroadcastGateway } from './ws/ws.gateway';
 import * as fs from 'fs/promises';
 import { Readable } from 'stream';
 import * as path from 'path';
+import { s2tErrType } from 'interfaces/types';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -32,6 +33,7 @@ describe('AppController', () => {
   describe('Test audio', () => {
     let appController: AppController;
     let elevenlabs: ElevenLabsService;
+    let appService: AppService;
     beforeEach(async () => {
       const app: TestingModule = await Test.createTestingModule({
         controllers: [AppController],
@@ -40,6 +42,7 @@ describe('AppController', () => {
 
       appController = app.get<AppController>(AppController);
       elevenlabs = app.get<ElevenLabsService>(ElevenLabsService);
+      appService = app.get<AppService>(AppService);
     });
     it('should set alarm', async () => {
       const audioFilePath = path.resolve(__dirname, '../public/audio/audio_alarm.ogg');
@@ -47,27 +50,6 @@ describe('AppController', () => {
       try {
         const audioBuffer = await fs.readFile(audioFilePath);
         const mockStream = Readable.from(audioBuffer);
-        // const resultt = {
-        //
-        //   text: 'የመኝት',
-        //
-        //   start: 0.099,
-        //
-        //   end: 0.759,
-        //
-        //   type: 'word',
-        //
-        //   logprob: 0
-        //
-        // }
-        //
-
-        // Use `ok()` from neverthrow
-        // jest.spyOn(elevenlabs, 'speech2text').mockResolvedValue(ok(resultt));
-
-        // jest.spyOn(elevenlabs, 'speech2text').mockResolvedValue(ok("ለነገ አላርም ሙላ"));
-
-
         // Create a mock File object
         const mockFile: Express.Multer.File = {
           fieldname: 'audio', // Or whatever the field name in your form would be
@@ -82,7 +64,6 @@ describe('AppController', () => {
           path: audioFilePath, // The original path
         };
         const result = await appController.analizeAudio(mockFile);
-        console.log('result from audio', result);
 
         expect(result).toHaveProperty('action');
         expect(result.action).toBe('set alarm'); // Or whatever the expected action is
@@ -90,6 +71,18 @@ describe('AppController', () => {
       } catch (error) {
         console.error('Error reading audio file:', error);
         fail(error); // Fail the test if the file cannot be read
+      }
+    })
+
+    it('speech 2 text should error if not given audio ', async () => {
+      const nonAudioFilePath = path.resolve(__dirname, '../public/selam-abe_en_wasm.ppn'); // explicitly name as non-audio
+      const nonAudioBuffer = await fs.readFile(nonAudioFilePath);
+      const blob = new Blob([nonAudioBuffer]);
+      const result = await appService.analizeAudioBlob(blob);
+      expect(result.isErr()).toBe(true)
+      if (result.isErr()) {
+        const error: s2tErrType = "Speech2TextError"
+        expect(result.error).toBe(error)
       }
     })
   });

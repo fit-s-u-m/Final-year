@@ -3,7 +3,7 @@ import { ElevenLabsService } from "./elevenLabs.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Response } from 'express';
 import { ApiBody, ApiConsumes } from "@nestjs/swagger";
-import { TextToSpeechDto } from "interfaces/dto";
+import { TextToSpeechDto } from "../../interfaces/dto";
 
 @Controller()
 export class ElevenLabsController {

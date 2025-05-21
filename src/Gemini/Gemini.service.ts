@@ -57,6 +57,7 @@ object: The target of the action.This can be a person, place, or thing.
         Format the number to match 0912345678 format.
         If the number starts with "9" or is missing "09", automatically prepend "0" to make it "09xxxxxxx".
         make this in the object key
+        the input might be mistaken and send 'አለር' to mean 'አላርም' so convert it to set alarm
 
         Time Normalization:
         If the object is a time expression(e.g., setting an set appointment or set alarm), convert it into this normalized format:

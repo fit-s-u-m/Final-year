@@ -42,6 +42,7 @@ export class ElevenLabsService {
       const error: t2sErrType = "Text2SpeechError"
       return err(error)
     }
+    console.log("text 2 speech", response.isErr(), response.value)
 
     const chunks: Buffer[] = [];
 

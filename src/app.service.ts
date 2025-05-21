@@ -4,6 +4,7 @@ import { GeminiService } from './Gemini/Gemini.service';
 import { err } from 'neverthrow';
 import { Logger } from '@nestjs/common';
 import { BroadcastGateway } from './ws/ws.gateway';
+import { s2tErrType } from 'interfaces/types';
 
 @Injectable()
 export class AppService {
@@ -13,14 +14,13 @@ export class AppService {
     private readonly socket: BroadcastGateway
   ) { }
   private readonly logger = new Logger(AppService.name);
-  getHello(): string {
-    return 'Hello World!';
-  }
   public async analizeAudioBlob(blob: Blob) {
     const response = await this.elevenLabs.speech2text(blob)
     if (response.isErr()) {
       this.logger.debug(response.error, "changing audio to text error within 11 labs  in app.service")
-      return err(response.error)
+      console.log("changing audio to text error within 11 labs  in app.service Error")
+      const error: s2tErrType = "Speech2TextError"
+      return err(error)
     }
 
     const text = response.value.text
