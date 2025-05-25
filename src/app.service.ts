@@ -14,7 +14,7 @@ export class AppService {
     private readonly socket: BroadcastGateway
   ) { }
   private readonly logger = new Logger(AppService.name);
-  public async analizeAudioBlob(blob: Blob) {
+  public async analizeAudioBlob(clientId: string, blob: Blob) {
     const response = await this.elevenLabs.speech2text(blob)
     if (response.isErr()) {
       this.logger.debug(response.error, "changing audio to text error within 11 labs  in app.service")
@@ -29,6 +29,7 @@ export class AppService {
 
     this.logger.debug(text, "Trying to convert to command")
     const data = await this.gemini.changeTextToCommand(text)
+    console.log(data)
     if (data.isErr()) {
       this.logger.error("Changing text to command error within gemini  in app.service", data.error)
       return err(data.error)
@@ -40,7 +41,7 @@ export class AppService {
 
     this.logger.log(data.value.text, "Converted change text to command ")
     const actionObj = JSON.parse(data.value.text)
-    this.socket.broadcast(actionObj); // 🔊 broadcast event
+    this.socket.sendCommand(clientId, actionObj)
     return actionObj
 
   }

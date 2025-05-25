@@ -1,4 +1,4 @@
-import { Controller, Get, MaxFileSizeValidator, ParseFilePipe, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, MaxFileSizeValidator, Param, ParseFilePipe, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { AppService } from './app.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AudioService } from './11Labs/audio.service';
@@ -36,11 +36,10 @@ export class AppController {
         ]
       })
     )
-    audio: Express.Multer.File) {
-
+    audio: Express.Multer.File, @Query('socketId') socketId: string) {
     const processedAudio = await this.audioService.processAudio(audio);
     const blob = new Blob([processedAudio], { type: audio.mimetype });
-    const result = await this.appService.analizeAudioBlob(blob)
+    const result = await this.appService.analizeAudioBlob(socketId, blob)
     return result
   }
 }

@@ -143,6 +143,9 @@ Examples:
 
         Amharic Input: set reminder for 5pm 12 / 12
         JSON Output: { "object": "23:00:12:12:2025", "action": "remind" }
+
+        Amharic Input: open door
+        JSON Output: { "object": "door", "action": "open" }
         `,
 
         responseMimeType: 'application/json',
