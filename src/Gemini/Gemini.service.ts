@@ -133,6 +133,11 @@ Examples:
         Amharic Input: ሁሉንም መብራት አብራ
         JSON Output: { "object": "light", "action": "turn on", "location": "all" }
 
+        Amharic Input: በርዝጋ
+        JSON Output: { "object": "door", "action": "close"}
+        Amharic Input: በር ክፈት
+        JSON Output: { "object": "door", "action": "open"}
+
 
         if you find this action try to match it exactly
                 call

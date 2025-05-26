@@ -11,12 +11,30 @@ export class AudioService {
     await fs.mkdir(outputDir, { recursive: true });
 
     const tempInputPath = join(outputDir, `input_${Date.now()}.wav`);
+    const tempInputConcPath = join(outputDir, `input_conc_${Date.now()}.wav`);
+    // const introPath = join(__dirname, "..", "..", "public", `intro.ogg`);
+    const introPath = join(process.cwd(), "public", "intro.ogg");
+
     const tempOutputPath = join(outputDir, `output_${Date.now()}.wav`);
     await fs.writeFile(tempInputPath, audio.buffer)
 
+    await new Promise<void>((resolve, reject) => {
+      ffmpeg()
+        .input(introPath)
+        .input(tempInputPath)
+        .inputOptions("-filter_complex", "[0:0][1:0]concat=n=2:v=0:a=1[out]")
+        .outputOptions("-map", "[out]")
+        .audioChannels(1)
+        .audioFrequency(16000)
+        .format("wav")
+        .on("end", resolve)
+        .on("error", reject)
+        .save(tempInputConcPath);
+    });
+
     // Step 2: Process the audio with ffmpeg
     await new Promise<void>((resolve, reject) => {
-      ffmpeg(tempInputPath)
+      ffmpeg(tempInputConcPath)
         .audioChannels(1)
         .audioFrequency(16000)
         .format('wav')
@@ -42,6 +60,7 @@ export class AudioService {
 
     // Step 4: Clean up temp files (optional but recommended)
     await fs.unlink(tempInputPath).catch(() => { });
+    await fs.unlink(tempInputConcPath);
 
     // Step 5: Return the processed audio as Buffer
     return processedBuffer;
