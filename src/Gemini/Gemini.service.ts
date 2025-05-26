@@ -12,6 +12,8 @@ export class GeminiService {
 
   async changeTextToCommand(text: string): Promise<ResultAsync<GenerateContentResponse, text2CommandErrType>> {
     const now = Date.now()
+    const dateMonth = getMonth(now)
+    const dateDate = getDate(now)
     const date = `${getDate(now)}:${getMonth(now) + 1}:${getYear(now)}`
     const time = `${getHours(now)}:${getMinutes(now)}`
     console.log("Date:", date)
@@ -76,6 +78,7 @@ HH: MM: DD: MM: YYYY
 
         Room Location Normalization:
         When the input involves a light - related command, extract the room location from the voice and normalize it to one of the following values:
+        if it is said ሁሉም -> means all room in the location
 
         "bed room"
         "living room"(normalize inputs like "salon" or "ሳሎን" to this)
@@ -86,6 +89,7 @@ HH: MM: DD: MM: YYYY
         If the input text is exactly or contains "abe" or "selam abe"(in English or Amharic like "አቤ" or "ሰላም አቤ"):
         Set "action" to "wakeword" and "object" to an empty string.
         Ignore any other parts of the text.
+        
 
 Examples:
         Amharic Input: ለአበበ ደውል
@@ -120,6 +124,12 @@ Examples:
         Amharic Input:  ሸንት ቤት መብራትን አጥፋ
         JSON Output: { "object": "light", "action": "turn off", "location": "bath room" }
 
+        Amharic Input:  ሁሉንም መብራት አጥፋ
+        JSON Output: { "object": "light", "action": "turn off", "location": "all" }
+
+        Amharic Input: ሁሉንም መብራት አብራ
+        JSON Output: { "object": "light", "action": "turn on", "location": "all" }
+
 
         if you find this action try to match it exactly
                 call
@@ -136,7 +146,10 @@ Examples:
         JSON Output: { "object": "21:30:18:05:2025", "action": "remind" }
 
         Amharic Input: set alarm for 12 in the morning, Ethiopian time, tomorrow
-        JSON Output: { "object": "06:00:19:05:2025", "action": "set alarm" }
+        JSON Output: { "object": "06:00:${dateDate}:${dateMonth}:2025", "action": "set alarm" }
+
+        Amharic Input: ለማታ አስራ ሁለት ሰአት አላርም ሙላ
+        JSON Output: { "object": "18:00:${dateDate}:${dateMonth}:2025", "action": "set alarm" }
 
         Amharic Input: set appointment for 10am today
         JSON Output: { "object": "16:00:18:05:2025", "action": "set appointment" }
