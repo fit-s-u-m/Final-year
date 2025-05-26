@@ -17,6 +17,7 @@ export class GeminiService {
     const date = `${getDate(now)}:${getMonth(now) + 1}:${getYear(now)}`
     const time = `${getHours(now)}:${getMinutes(now)}`
     console.log("Date:", date)
+    console.log("Time:", time)
     const response = await fromPromise(ai.models.generateContent({
       model: 'gemini-2.0-flash',
       contents: `
@@ -160,6 +161,9 @@ Examples:
 
         Amharic Input: 10 ሰዓት ቀን አላርም ሙላ 
         JSON Output: { "object": "16:00:${dateDate}:05:2025", "action": "set alarm" }
+
+        Amharic Input:   ከ አንድ ሰአት በኃላ አላርም ሙላ
+        JSON Output: { "object": "${getHours(Date.now()) + 1}:${getMinutes(Date.now())}:${dateDate}:05:2025", "action": "set alarm" }
 
         Amharic Input: set reminder for 5pm 12 / 12
         JSON Output: { "object": "23:00:12:12:2025", "action": "remind" }
