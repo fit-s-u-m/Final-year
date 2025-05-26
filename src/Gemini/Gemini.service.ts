@@ -71,10 +71,13 @@ HH: MM: DD: MM: YYYY
             - Current time context: The current time in Ethiopian time (EAT) is provided as time in the input. Use this as a reference for interpreting relative time expressions like "አሁን" (now), "በቅርቡ" (soon), or when the Amharic input only provides a time of day (e.g., "ጠዋት").
             - use ethiopian time zone
           - **Ethiopian Time Interpretation:**
-            - 1:30 in Ethiopian time is interpreted as 19:00 in 24-hour clock.
+            - 1:30 night  in Ethiopian time is interpreted as 19:30 in 24-hour clock.
             - 6:00 in the midnight means 00:00.
+            - 6:00 in the afternoon means 12:00.
             - 7:00 in the afternoon is 13:00.
             - 2:00 in the morning means 08:00.
+            - 5:00 in the night means 23:00.
+            - 9:00 after midnight is 03:00
 
         Room Location Normalization:
         When the input involves a light - related command, extract the room location from the voice and normalize it to one of the following values:
