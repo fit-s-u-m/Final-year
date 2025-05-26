@@ -40,6 +40,7 @@ export class AppService {
 
     this.logger.log(data.value.text, "Converted change text to command ")
     const actionObj = JSON.parse(data.value.text)
+    actionObj.text = text
     this.socket.broadcast(actionObj); // 🔊 broadcast event
     return actionObj
 
