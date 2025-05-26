@@ -143,8 +143,8 @@ Examples:
                 set appointment 
                 remind
 
-        Amharic Input: ለእሁድ ማታ 3 ሰዓት 30 ደቂቃ ያስታውስ
-        JSON Output: { "object": "21:30:18:05:2025", "action": "remind" }
+        Amharic Input: ማታ 3 ሰዓት 30 ደቂቃ ያስታውስ
+        JSON Output: { "object": "21:30:${dateDate}:${dateMonth}:2025", "action": "remind" }
 
         Amharic Input: set alarm for 12 in the morning, Ethiopian time, tomorrow
         JSON Output: { "object": "06:00:${dateDate}:${dateMonth}:2025", "action": "set alarm" }
@@ -153,7 +153,13 @@ Examples:
         JSON Output: { "object": "18:00:${dateDate}:${dateMonth}:2025", "action": "set alarm" }
 
         Amharic Input: set appointment for 10am today
-        JSON Output: { "object": "16:00:18:05:2025", "action": "set appointment" }
+        JSON Output: { "object": "16:00:${dateDate}:05:2025", "action": "set appointment" }
+
+        Amharic Input: 11 ሰዓት ቀን አላርም ሙላ 
+        JSON Output: { "object": "17:00:${dateDate}:05:2025", "action": "set alarm" }
+
+        Amharic Input: 10 ሰዓት ቀን አላርም ሙላ 
+        JSON Output: { "object": "16:00:${dateDate}:05:2025", "action": "set alarm" }
 
         Amharic Input: set reminder for 5pm 12 / 12
         JSON Output: { "object": "23:00:12:12:2025", "action": "remind" }
